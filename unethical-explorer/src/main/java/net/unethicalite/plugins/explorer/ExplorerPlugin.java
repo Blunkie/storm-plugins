@@ -4,6 +4,7 @@ import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.MenuAction;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ConfigButtonClicked;
 import net.runelite.api.events.MenuOpened;
@@ -31,6 +32,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 
 @Extension
@@ -65,12 +67,13 @@ public class ExplorerPlugin extends LoopedPlugin
 		keyManager.registerKeyListener(hotkeyListener);
 	}
 
+	private final AtomicBoolean useTransports = new AtomicBoolean(true);
+
 	@Override
 	public void shutDown()
 	{
 		destination = null;
 		keyManager.unregisterKeyListener(hotkeyListener);
-
 	}
 
 	private final HotkeyListener hotkeyListener = new HotkeyListener(() -> config.toggleKeyBind())
@@ -153,16 +156,39 @@ public class ExplorerPlugin extends LoopedPlugin
 			return;
 		}
 
-		client.createMenuEntry(1)
+		MenuEntry parent = client.createMenuEntry(1)
 				.setOption("<col=00ff00>Explorer:</col>")
 				.setTarget("Walk here")
+				.setType(MenuAction.RUNELITE_SUBMENU);
+
+		client.createMenuEntry(1)
+				.setOption("Use transports")
 				.setType(MenuAction.RUNELITE)
+				.setParent(parent)
 				.onClick(e ->
 				{
+					useTransports.set(true);
 					setDestination(mouse);
 
 					if (config.closeMap())
+					{
 						closeWorldMap();
+					}
+				});
+
+		client.createMenuEntry(1)
+				.setOption("Just walk")
+				.setType(MenuAction.RUNELITE)
+				.setParent(parent)
+				.onClick(e ->
+				{
+					useTransports.set(false);
+					setDestination(mouse);
+
+					if (config.closeMap())
+					{
+						closeWorldMap();
+					}
 				});
 	}
 
@@ -250,6 +276,12 @@ public class ExplorerPlugin extends LoopedPlugin
 		{
 			destination = null;
 			return -1;
+		}
+
+		if (!useTransports.get())
+		{
+			Movement.getPath(destination).walk();
+			return -4;
 		}
 
 		Movement.walkTo(destination);
