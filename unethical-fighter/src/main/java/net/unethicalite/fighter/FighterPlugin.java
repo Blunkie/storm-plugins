@@ -192,24 +192,20 @@ public class FighterPlugin extends LoopedPlugin
 		}
 
 		Player local = Players.getLocal();
-		if (!Inventory.isFull())
+		TileItem loot = TileItems.getFirstSurrounding(center, config.attackRange(), x ->
+				!notOurItems.contains(x)
+						&& !shouldNotLoot(x) && (shouldLootByName(x) || shouldLootUntradable(x) || shouldLootByValue(x))
+		);
+		if (loot != null && loot.canPick())
 		{
-			TileItem loot = TileItems.getNearest(x ->
-					x.getTile().getWorldLocation().distanceTo(center) < config.attackRange()
-							&& !notOurItems.contains(x)
-							&& !shouldNotLoot(x) && (shouldLootByName(x) || shouldLootUntradable(x) || shouldLootByValue(x))
-			);
-			if (loot != null)
+			if (!Reachable.isInteractable(loot.getTile()))
 			{
-				if (!Reachable.isInteractable(loot.getTile()))
-				{
-					Movement.walkTo(loot.getTile().getWorldLocation());
-					return -4;
-				}
-
-				loot.pickup();
-				return -3;
+				Movement.walkTo(loot.getTile().getWorldLocation());
+				return -4;
 			}
+
+			loot.pickup();
+			return -3;
 		}
 
 		if (config.alching())

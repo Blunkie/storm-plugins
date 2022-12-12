@@ -88,12 +88,6 @@ public class UnethicalAgilityPlugin extends LoopedPlugin
 			return -1;
 		}
 
-		if (!Movement.isRunEnabled() && Static.getClient().getEnergy() > 5)
-		{
-			Movement.toggleRun();
-			return -1;
-		}
-
 		if (config.useSummerPies() && config.stopWhenOutOfSummerPies()
 				&& !Inventory.contains(SUMMER_PIE, HALF_A_SUMMER_PIE))
 		{
