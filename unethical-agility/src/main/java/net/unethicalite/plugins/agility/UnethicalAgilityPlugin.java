@@ -30,7 +30,6 @@ import net.unethicalite.api.plugins.LoopedPlugin;
 import net.unethicalite.api.plugins.Plugins;
 import net.unethicalite.api.utils.MessageUtils;
 import net.unethicalite.api.widgets.Dialog;
-import net.unethicalite.client.Static;
 import org.pf4j.Extension;
 
 import javax.swing.SwingUtilities;
